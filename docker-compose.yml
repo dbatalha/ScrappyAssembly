@@ -1,0 +1,57 @@
+version: '3.7'
+services:
+  mongodb_container:
+    image: mongo:latest
+    container_name: mongodb-data
+    hostname: mongodb-data
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data_container:/Users/danielbatalha/data
+    networks:
+      - ntfynet
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    ports:
+        - 5672:5672
+        - 15672:15672
+    volumes:
+        - rabbitmq_data_container:/var/lib/rabbitmq/
+        - rabbitmq_config_container:/var/log/rabbitmq
+    networks:
+        - ntfynet
+
+  scrappy_db:
+    container_name: scrappy-twitch-db
+    hostname: scrappy-twitch-db
+    build:
+      context: /Users/danielbatalha/Documents/GitHub/ScrappyTwitchPresistance
+      dockerfile: Dockerfile
+      args:
+        MONGO_CONNECTION: ${MONGO_CONNECTION}
+    ports:
+      - 9000:9000
+    networks:
+      - ntfynet
+
+  scrappy_bot:
+    container_name: scrappy-twitch
+    hostname: scrappy-twitch
+    build:
+      context: /Users/danielbatalha/Documents/GitHub/ScrappyTwitch
+      dockerfile: Dockerfile
+    networks:
+      - ntfynet
+
+volumes:
+  mongodb_data_container:
+  rabbitmq_data_container:
+  rabbitmq_config_container:
+
+networks:
+  ntfynet:
